@@ -60,6 +60,8 @@ function bindElements() {
     "settings-panel",
     "dark-mode",
     "developer-mode",
+    "reset-settings",
+    "settings-message",
     "training-day-select",
     "remove-training-day",
     "training-day-form",
@@ -115,6 +117,14 @@ function bindEvents() {
         enabled: els.developerMode.checked ? state.apiSettings.enabled : false
       }
     });
+  });
+
+  els.resetSettings.addEventListener("click", () => {
+    commit({
+      apiSettings: { ...defaultState.apiSettings },
+      uiSettings: { ...defaultState.uiSettings }
+    });
+    els.settingsMessage.textContent = "Settings reset to default.";
   });
 
   els.trainingDaySelect.addEventListener("change", () => {

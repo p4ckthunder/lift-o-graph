@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "liftograph-web-v3";
+const CACHE_NAME = "liftograph-web-v4";
 const ASSETS = [
   "./",
   "./index.html",

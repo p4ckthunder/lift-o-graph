@@ -903,6 +903,20 @@ private fun PhaseSelector(selected: TrainingPhase, onSelected: (TrainingPhase) -
                     }
                 )
             }
+
+            OutlinedButton(
+                onClick = {
+                    onStateChanged(
+                        state.copy(
+                            apiSettings = ApiConnectorSettings(),
+                            uiSettings = UiSettings()
+                        )
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Reset settings to default")
+            }
         }
     }
 }
