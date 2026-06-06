@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Lift-O-Graph icon</title>
+  <desc id="desc">A barbell and rising progress line.</desc>
+  <rect width="512" height="512" rx="96" fill="#2e6f9e"/>
+  <path d="M102 302h308" stroke="#f4f6f4" stroke-width="34" stroke-linecap="round"/>
+  <path d="M140 242v120M188 218v168M324 218v168M372 242v120" stroke="#f4f6f4" stroke-width="28" stroke-linecap="round"/>
+  <path d="M144 318l76-72 56 42 94-118" fill="none" stroke="#3ba55d" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="370" cy="170" r="20" fill="#e58b6b"/>
+</svg>

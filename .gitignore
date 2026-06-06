@@ -1,0 +1,14 @@
+node_modules/
+.venv-voice/
+output/
+.playwright-cli/
+voice-lab/output/*
+!voice-lab/output/.gitkeep
+.env
+.DS_Store
+*.log
+local.properties
+**/local.properties
+**/build/
+**/.gradle/
+**/.gradle-local/

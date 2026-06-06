@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#f4f6f4">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Lift-O-Graph">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <title>Lift-O-Graph</title>
+    <link rel="manifest" href="./manifest.webmanifest">
+    <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <div id="app" class="app-shell">
+      <header class="top-bar">
+        <div>
+          <h1>Lift-O-Graph</h1>
+          <p>Scientific training log</p>
+        </div>
+        <button id="settings-toggle" class="icon-button" type="button" title="Settings" aria-label="Settings">
+          <span aria-hidden="true">⚙</span>
+        </button>
+      </header>
+
+      <main class="content">
+        <section id="settings-panel" class="panel is-hidden" aria-label="Settings">
+          <div class="panel-heading">
+            <h2>Settings</h2>
+            <p>Appearance and advanced tools</p>
+          </div>
+          <details class="guide" open>
+            <summary>How to use Lift-O-Graph</summary>
+            <ol class="guide-list">
+              <li>Pick a training day from the dropdown, such as Push Day, Pull Day, or Leg Day.</li>
+              <li>Tap an exercise chip, or use the + button in Exercises to add one.</li>
+              <li>Use the minus button beside the training day dropdown to remove the selected day.</li>
+              <li>Enter weight and reps, then tap Log set.</li>
+              <li>For a whole workout, type something like bench press 145 for 6 and 145 for 8, curls 30 for 12, then tap Log full workout.</li>
+              <li>Use the Weight, Reps, Est. 1RM, and Volume chips to change the graph.</li>
+            </ol>
+            <p class="guide-note">The box under Training Day adds a new training day. Exercises are the chips in the Exercises section.</p>
+          </details>
+          <label class="switch-row">
+            <span>
+              <strong>Dark mode</strong>
+              <small>Discord-style dark background</small>
+            </span>
+            <input id="dark-mode" type="checkbox">
+          </label>
+          <label class="switch-row">
+            <span>
+              <strong>API connector</strong>
+              <small>Optional endpoint for your own AI or backend</small>
+            </span>
+            <input id="developer-mode" type="checkbox">
+          </label>
+        </section>
+
+        <section class="section-block" aria-label="Training day">
+          <h2>Training Day</h2>
+          <div class="field-group">
+            <label for="training-day-select">Choose training day</label>
+            <div class="select-action-row">
+              <select id="training-day-select" class="field"></select>
+              <button id="remove-training-day" class="icon-button danger-button" type="button" title="Remove selected training day" aria-label="Remove selected training day">
+                <span aria-hidden="true">−</span>
+              </button>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="training-day-input">Add training day</label>
+          </div>
+          <form id="training-day-form" class="inline-form" aria-label="Add training day">
+            <input id="training-day-input" class="field" type="text" autocomplete="off" placeholder="Example: Arm Day">
+            <button class="icon-button primary" type="submit" title="Save training day" aria-label="Save training day">
+              <span aria-hidden="true">✓</span>
+            </button>
+          </form>
+        </section>
+
+        <section class="section-block" aria-label="Exercises">
+          <div class="section-title-row">
+            <h2>Exercises</h2>
+            <button id="show-exercise-form" class="icon-button primary" type="button" title="Add exercise" aria-label="Add exercise">
+              <span aria-hidden="true">+</span>
+            </button>
+          </div>
+          <div id="exercise-chips" class="chips"></div>
+          <form id="exercise-form" class="inline-form compact-form is-hidden">
+            <input id="exercise-input" class="field" type="text" autocomplete="off" placeholder="Bench Press">
+            <button id="cancel-exercise" class="icon-button" type="button" title="Cancel exercise" aria-label="Cancel exercise">
+              <span aria-hidden="true">×</span>
+            </button>
+            <button class="icon-button primary" type="submit" title="Save exercise" aria-label="Save exercise">
+              <span aria-hidden="true">✓</span>
+            </button>
+          </form>
+        </section>
+
+        <section class="panel" aria-label="Progress">
+          <div class="section-title-row">
+            <h2>Progress</h2>
+            <span id="phase-pill" class="phase-pill">Maintain</span>
+          </div>
+          <div id="metric-chips" class="chips"></div>
+          <div class="chart-wrap">
+            <canvas id="lift-chart" width="680" height="360"></canvas>
+            <div id="empty-chart" class="empty-state">Log a lift to start the graph.</div>
+          </div>
+          <p id="metric-hint" class="hint"></p>
+          <div id="phase-legend" class="legend"></div>
+        </section>
+
+        <section class="panel" aria-label="Log workout">
+          <h2>Log Workout</h2>
+          <textarea id="transcript" class="field textarea" rows="3" placeholder="Bench press 145 for 6 and 145 for 8, curls 30 for 12"></textarea>
+          <div class="button-row">
+            <button id="voice-button" class="secondary-button" type="button">Voice</button>
+            <button id="parse-button" class="secondary-button" type="button">Parse</button>
+          </div>
+          <div class="split-row">
+            <label>
+              <span>Weight</span>
+              <input id="weight-input" class="field" type="number" inputmode="decimal" min="0" step="0.1">
+            </label>
+            <label>
+              <span>Reps</span>
+              <input id="reps-input" class="field" type="number" inputmode="numeric" min="1" step="1">
+            </label>
+          </div>
+          <label>
+            <span>Notes</span>
+            <input id="notes-input" class="field" type="text">
+          </label>
+          <div>
+            <span class="field-label">Phase</span>
+            <div id="phase-chips" class="chips"></div>
+          </div>
+          <button id="log-set-button" class="primary-button" type="button">Log set</button>
+          <button id="log-workout-button" class="secondary-button wide" type="button">Log full workout</button>
+          <p id="message" class="hint live-message" role="status"></p>
+        </section>
+
+        <section id="developer-panel" class="panel is-hidden" aria-label="API connector">
+          <div class="panel-heading">
+            <h2>API Connector</h2>
+            <p>Send lift events to your own AI or backend</p>
+          </div>
+          <label>
+            <span>API endpoint</span>
+            <input id="api-endpoint" class="field" type="url" placeholder="https://example.com">
+          </label>
+          <label>
+            <span>API key</span>
+            <input id="api-key" class="field" type="password">
+          </label>
+          <label class="switch-row compact-switch">
+            <span><strong>Auto-send lifts</strong></span>
+            <input id="api-enabled" type="checkbox">
+          </label>
+          <button id="send-latest" class="secondary-button wide" type="button">Send latest lift</button>
+          <p id="api-status" class="hint live-message" role="status"></p>
+        </section>
+
+        <section class="panel" aria-label="All logs">
+          <div class="section-title-row">
+            <h2>All Logs</h2>
+            <span id="log-count" class="count-pill">0</span>
+          </div>
+          <div id="logs-list" class="logs-list"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
