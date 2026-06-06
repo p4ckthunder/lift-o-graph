@@ -335,24 +335,29 @@ private fun TrainingDayPicker(
                             onClick = {
                                 onSelected(day.id)
                                 expanded = false
+                            },
+                            trailingIcon = {
+                                IconButton(
+                                    enabled = trainingDays.size > 1,
+                                    onClick = {
+                                        onRemove(day.id)
+                                        expanded = false
+                                    }
+                                ) {
+                                    Text(
+                                        "-",
+                                        fontWeight = FontWeight.Black,
+                                        color = if (trainingDays.size > 1) {
+                                            MaterialTheme.colorScheme.tertiary
+                                        } else {
+                                            MaterialTheme.colorScheme.onSurfaceVariant
+                                        }
+                                    )
+                                }
                             }
                         )
                     }
                 }
-            }
-            IconButton(
-                enabled = selectedDay != null && trainingDays.size > 1,
-                onClick = { selectedDay?.let { onRemove(it.id) } }
-            ) {
-                Text(
-                    "-",
-                    fontWeight = FontWeight.Black,
-                    color = if (selectedDay != null && trainingDays.size > 1) {
-                        MaterialTheme.colorScheme.tertiary
-                    } else {
-                        MaterialTheme.colorScheme.onSurfaceVariant
-                    }
-                )
             }
         }
 
@@ -903,20 +908,6 @@ private fun PhaseSelector(selected: TrainingPhase, onSelected: (TrainingPhase) -
                     }
                 )
             }
-
-            OutlinedButton(
-                onClick = {
-                    onStateChanged(
-                        state.copy(
-                            apiSettings = ApiConnectorSettings(),
-                            uiSettings = UiSettings()
-                        )
-                    )
-                },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text("Reset settings to default")
-            }
         }
     }
 }
@@ -982,6 +973,27 @@ private fun SettingsPanel(
                         }
                     }
                 )
+            }
+
+            OutlinedButton(
+                onClick = {
+                    onStateChanged(
+                        state.copy(
+                            apiSettings = ApiConnectorSettings(),
+                            uiSettings = UiSettings()
+                        )
+                    )
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Reset settings to default")
+            }
+
+            OutlinedButton(
+                onClick = { onStateChanged(LiftographState()) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Reset app to default")
             }
         }
     }

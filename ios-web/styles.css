@@ -202,14 +202,6 @@ small,
   font-weight: 700;
 }
 
-.select-action-row {
-  display: grid !important;
-  grid-template-columns: 1fr 44px;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 0 !important;
-}
-
 .field {
   width: 100%;
   min-height: 48px;
@@ -290,6 +282,33 @@ label span,
   color: var(--muted);
   cursor: not-allowed;
   opacity: 0.55;
+}
+
+.danger-text-button {
+  color: var(--tertiary);
+}
+
+.training-days-manager {
+  display: grid;
+  gap: 8px;
+}
+
+.training-day-row {
+  display: grid;
+  grid-template-columns: 1fr 44px;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 6px 6px 6px 12px;
+  background: color-mix(in srgb, var(--surface-variant) 42%, transparent);
+  border-radius: var(--radius);
+}
+
+.training-day-row strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .primary-button,

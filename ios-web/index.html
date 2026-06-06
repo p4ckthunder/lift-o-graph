@@ -11,7 +11,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="./styles.css?v=5">
+    <link rel="stylesheet" href="./styles.css?v=6">
   </head>
   <body>
     <div id="app" class="app-shell">
@@ -36,7 +36,7 @@
             <ol class="guide-list">
               <li>Pick a training day from the dropdown, such as Push Day, Pull Day, or Leg Day.</li>
               <li>Tap an exercise chip, or use the + button in Exercises to add one.</li>
-              <li>Use the minus button beside the training day dropdown to remove the selected day.</li>
+              <li>Use the Manage training days list to remove a specific day.</li>
               <li>Enter weight and reps, then tap Log set.</li>
               <li>For a whole workout, type something like bench press 145 for 6 and 145 for 8, curls 30 for 12, then tap Log full workout.</li>
               <li>Use the Weight, Reps, Est. 1RM, and Volume chips to change the graph.</li>
@@ -58,6 +58,7 @@
             <input id="developer-mode" type="checkbox">
           </label>
           <button id="reset-settings" class="secondary-button wide" type="button">Reset settings to default</button>
+          <button id="reset-app" class="secondary-button wide danger-text-button" type="button">Reset app to default</button>
           <p id="settings-message" class="hint live-message" role="status"></p>
         </section>
 
@@ -65,12 +66,11 @@
           <h2>Training Day</h2>
           <div class="field-group">
             <label for="training-day-select">Choose training day</label>
-            <div class="select-action-row">
-              <select id="training-day-select" class="field"></select>
-              <button id="remove-training-day" class="icon-button danger-button" type="button" title="Remove selected training day" aria-label="Remove selected training day">
-                <span aria-hidden="true">−</span>
-              </button>
-            </div>
+            <select id="training-day-select" class="field"></select>
+          </div>
+          <div class="field-group">
+            <span>Manage training days</span>
+            <div id="training-days-manager" class="training-days-manager"></div>
           </div>
           <div class="field-group">
             <label for="training-day-input">Add training day</label>
@@ -177,6 +177,6 @@
       </main>
     </div>
 
-    <script src="./app.js?v=5" defer></script>
+    <script src="./app.js?v=6" defer></script>
   </body>
 </html>

@@ -61,9 +61,10 @@ function bindElements() {
     "dark-mode",
     "developer-mode",
     "reset-settings",
+    "reset-app",
     "settings-message",
     "training-day-select",
-    "remove-training-day",
+    "training-days-manager",
     "training-day-form",
     "training-day-input",
     "exercise-chips",
@@ -127,14 +128,20 @@ function bindEvents() {
     els.settingsMessage.textContent = "Settings reset to default.";
   });
 
+  els.resetApp.addEventListener("click", () => {
+    const confirmed = window.confirm("Reset the app to default days and clear all lift logs?");
+    if (!confirmed) return;
+    state = normalizeState(cloneDefaultState());
+    saveState(state);
+    clearLiftFields();
+    render();
+    els.settingsMessage.textContent = "App reset to default.";
+  });
+
   els.trainingDaySelect.addEventListener("change", () => {
     const trainingDayId = els.trainingDaySelect.value;
     const selectedExerciseId = state.exercises.find((exercise) => exercise.trainingDayId === trainingDayId)?.id ?? "";
     commit({ selectedTrainingDayId: trainingDayId, selectedExerciseId });
-  });
-
-  els.removeTrainingDay.addEventListener("click", () => {
-    removeSelectedTrainingDay();
   });
 
   els.trainingDayForm.addEventListener("submit", (event) => {
@@ -232,7 +239,23 @@ function renderTrainingDays() {
     .map((day) => `<option value="${escapeHtml(day.id)}">${escapeHtml(day.name)}</option>`)
     .join("");
   els.trainingDaySelect.value = state.selectedTrainingDayId;
-  els.removeTrainingDay.disabled = state.trainingDays.length <= 1;
+
+  els.trainingDaysManager.innerHTML = "";
+  state.trainingDays.forEach((day) => {
+    const row = document.createElement("div");
+    row.className = "training-day-row";
+    row.innerHTML = `<strong>${escapeHtml(day.name)}</strong>`;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "icon-button danger-button";
+    button.title = `Remove ${day.name}`;
+    button.setAttribute("aria-label", `Remove ${day.name}`);
+    button.disabled = state.trainingDays.length <= 1;
+    button.textContent = "−";
+    button.addEventListener("click", () => removeTrainingDay(day.id));
+    row.appendChild(button);
+    els.trainingDaysManager.appendChild(row);
+  });
 }
 
 function renderExercises() {
@@ -334,15 +357,16 @@ function renderLogs() {
   });
 }
 
-function removeSelectedTrainingDay() {
+function removeTrainingDay(dayId) {
   if (state.trainingDays.length <= 1) {
     setMessage("Keep at least one training day.");
     return;
   }
 
-  const dayId = state.selectedTrainingDayId;
   const remainingDays = state.trainingDays.filter((day) => day.id !== dayId);
-  const selectedTrainingDayId = remainingDays[0]?.id ?? "";
+  const selectedTrainingDayId = state.selectedTrainingDayId === dayId
+    ? remainingDays[0]?.id ?? ""
+    : state.selectedTrainingDayId;
   const exercises = state.exercises.filter((exercise) => exercise.trainingDayId !== dayId);
   const selectedExerciseId = exercises.find((exercise) => exercise.trainingDayId === selectedTrainingDayId)?.id ?? "";
 
@@ -741,6 +765,10 @@ function loadState() {
   } catch {
     return structuredClone(defaultState);
   }
+}
+
+function cloneDefaultState() {
+  return JSON.parse(JSON.stringify(defaultState));
 }
 
 function saveState(next) {
