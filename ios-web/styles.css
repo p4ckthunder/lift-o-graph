@@ -214,7 +214,32 @@ small,
 }
 
 select.field {
-  padding-right: 34px;
+  height: 48px;
+  min-height: 48px;
+  padding-right: 46px;
+  line-height: 1.2;
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.select-shell {
+  position: relative;
+}
+
+.select-shell::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--muted);
+  pointer-events: none;
+  transform: translateY(-42%);
 }
 
 .field:focus {
