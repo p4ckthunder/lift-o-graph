@@ -37,6 +37,7 @@ import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -55,6 +56,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -320,6 +322,7 @@ private fun TrainingDayPicker(
     var expanded by remember { mutableStateOf(false) }
     var adding by remember { mutableStateOf(false) }
     var newTrainingDay by remember { mutableStateOf("") }
+    var pendingDeleteDay by remember { mutableStateOf<TrainingDay?>(null) }
     val selectedDay = trainingDays.firstOrNull { it.id == selectedTrainingDayId } ?: trainingDays.firstOrNull()
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -355,29 +358,25 @@ private fun TrainingDayPicker(
                             onClick = {
                                 onSelected(day.id)
                                 expanded = false
-                            },
-                            trailingIcon = {
-                                IconButton(
-                                    enabled = trainingDays.size > 1,
-                                    onClick = {
-                                        onRemove(day.id)
-                                        expanded = false
-                                    }
-                                ) {
-                                    Icon(
-                                        Icons.Filled.Remove,
-                                        contentDescription = "Delete ${day.name}",
-                                        tint = if (trainingDays.size > 1) {
-                                            MaterialTheme.colorScheme.tertiary
-                                        } else {
-                                            MaterialTheme.colorScheme.onSurfaceVariant
-                                        }
-                                    )
-                                }
                             }
                         )
                     }
                 }
+            }
+            IconButton(
+                enabled = selectedDay != null && trainingDays.size > 1,
+                onClick = { selectedDay?.let { pendingDeleteDay = it } },
+                modifier = Modifier.size(48.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Remove,
+                    contentDescription = "Delete selected training day",
+                    tint = if (selectedDay != null && trainingDays.size > 1) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
             }
         }
 
@@ -420,6 +419,29 @@ private fun TrainingDayPicker(
                 Text("Add training day")
             }
         }
+    }
+
+    pendingDeleteDay?.let { day ->
+        AlertDialog(
+            onDismissRequest = { pendingDeleteDay = null },
+            title = { Text("Delete training day?") },
+            text = { Text("Are you sure you want to delete ${day.name}?") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onRemove(day.id)
+                        pendingDeleteDay = null
+                    }
+                ) {
+                    Text("Delete")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteDay = null }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

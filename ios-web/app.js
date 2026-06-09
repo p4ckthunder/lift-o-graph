@@ -360,6 +360,10 @@ function removeTrainingDay(dayId) {
     return;
   }
 
+  const day = state.trainingDays.find((item) => item.id === dayId);
+  const confirmed = window.confirm(`Are you sure you want to delete ${day?.name ?? "this day"}?`);
+  if (!confirmed) return;
+
   const remainingDays = state.trainingDays.filter((day) => day.id !== dayId);
   const selectedTrainingDayId = state.selectedTrainingDayId === dayId
     ? remainingDays[0]?.id ?? ""
