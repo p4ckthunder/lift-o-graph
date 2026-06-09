@@ -64,11 +64,12 @@ function bindElements() {
     "reset-app",
     "settings-message",
     "training-day-select",
-    "training-days-manager",
+    "delete-training-day",
     "training-day-form",
     "training-day-input",
     "exercise-chips",
     "show-exercise-form",
+    "delete-exercise",
     "exercise-form",
     "exercise-input",
     "cancel-exercise",
@@ -144,6 +145,10 @@ function bindEvents() {
     commit({ selectedTrainingDayId: trainingDayId, selectedExerciseId });
   });
 
+  els.deleteTrainingDay.addEventListener("click", () => {
+    removeTrainingDay(state.selectedTrainingDayId);
+  });
+
   els.trainingDayForm.addEventListener("submit", (event) => {
     event.preventDefault();
     const name = els.trainingDayInput.value.trim();
@@ -161,6 +166,8 @@ function bindEvents() {
     els.exerciseForm.classList.remove("is-hidden");
     els.exerciseInput.focus();
   });
+
+  els.deleteExercise.addEventListener("click", removeSelectedExercise);
 
   els.cancelExercise.addEventListener("click", () => {
     els.exerciseInput.value = "";
@@ -239,27 +246,13 @@ function renderTrainingDays() {
     .map((day) => `<option value="${escapeHtml(day.id)}">${escapeHtml(day.name)}</option>`)
     .join("");
   els.trainingDaySelect.value = state.selectedTrainingDayId;
-
-  els.trainingDaysManager.innerHTML = "";
-  state.trainingDays.forEach((day) => {
-    const row = document.createElement("div");
-    row.className = "training-day-row";
-    row.innerHTML = `<strong>${escapeHtml(day.name)}</strong>`;
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "icon-button danger-button";
-    button.title = `Remove ${day.name}`;
-    button.setAttribute("aria-label", `Remove ${day.name}`);
-    button.disabled = state.trainingDays.length <= 1;
-    button.textContent = "−";
-    button.addEventListener("click", () => removeTrainingDay(day.id));
-    row.appendChild(button);
-    els.trainingDaysManager.appendChild(row);
-  });
+  els.deleteTrainingDay.disabled = state.trainingDays.length <= 1;
 }
 
 function renderExercises() {
   const exercises = currentDayExercises();
+  els.deleteExercise.disabled = !selectedExercise();
+
   if (exercises.length === 0) {
     els.exerciseChips.innerHTML = `<p class="hint">No exercises on this training day yet.</p>`;
     return;
@@ -378,6 +371,24 @@ function removeTrainingDay(dayId) {
     selectedExerciseId
   });
   setMessage("Training day removed.");
+}
+
+function removeSelectedExercise() {
+  const selected = selectedExercise();
+  if (!selected) {
+    setMessage("Pick or add an exercise first.");
+    return;
+  }
+
+  const exercises = state.exercises.filter((exercise) => exercise.id !== selected.id);
+  const selectedExerciseId = exercises.find((exercise) => exercise.trainingDayId === state.selectedTrainingDayId)?.id ?? "";
+
+  commit({
+    exercises,
+    entries: state.entries.filter((entry) => entry.exerciseId !== selected.id),
+    selectedExerciseId
+  });
+  setMessage("Exercise removed.");
 }
 
 function drawChart() {
@@ -613,14 +624,18 @@ async function sendLiftEntry(entry) {
   if (!state.apiSettings.endpoint.trim()) {
     throw new Error("Missing API endpoint");
   }
+  const endpoint = parseApiEndpoint(state.apiSettings.endpoint);
+  if (!endpoint) {
+    throw new Error("Use an HTTPS endpoint, or localhost for testing.");
+  }
   const exercise = state.exercises.find((item) => item.id === entry.exerciseId);
   const trainingDay = state.trainingDays.find((item) => item.id === entry.trainingDayId);
   if (!exercise || !trainingDay) {
     throw new Error("Missing exercise or training day");
   }
-  const base = state.apiSettings.endpoint.replace(/\/+$/, "");
-  const response = await fetch(`${base}/liftograph/events`, {
+  const response = await fetch(`${endpoint}/liftograph/events`, {
     method: "POST",
+    redirect: "error",
     headers: {
       "Content-Type": "application/json",
       ...(state.apiSettings.apiKey ? { Authorization: `Bearer ${state.apiSettings.apiKey}` } : {})
@@ -639,6 +654,21 @@ async function sendLiftEntry(entry) {
   });
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}`);
+  }
+}
+
+function parseApiEndpoint(value) {
+  try {
+    const url = new URL(value.trim());
+    const localHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+    const isLocalHttp = url.protocol === "http:" && localHosts.has(url.hostname);
+    if (url.protocol !== "https:" && !isLocalHttp) return null;
+    url.pathname = url.pathname.replace(/\/+$/, "");
+    url.search = "";
+    url.hash = "";
+    return url.toString().replace(/\/+$/, "");
+  } catch {
+    return null;
   }
 }
 

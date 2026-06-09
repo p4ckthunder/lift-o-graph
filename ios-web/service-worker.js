@@ -1,6 +1,6 @@
 "use strict";
 
-const CACHE_NAME = "liftograph-web-v7";
+const CACHE_NAME = "liftograph-web-v8";
 const ASSETS = [
   "./",
   "./index.html",
@@ -12,6 +12,7 @@ const ASSETS = [
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"
 ];
+const ASSET_PATHS = new Set(ASSETS.map((asset) => new URL(asset, self.location.href).pathname));
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -31,6 +32,9 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) return;
+
   if (event.request.mode === "navigate") {
     event.respondWith(
       fetch(event.request)
@@ -44,13 +48,18 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  if (!ASSET_PATHS.has(requestUrl.pathname)) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request).then((cached) =>
+    caches.match(event.request, { ignoreSearch: true }).then((cached) =>
       cached || fetch(event.request).then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
         return response;
-      }).catch(() => caches.match("./index.html"))
+      })
     )
   );
 });

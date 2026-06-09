@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#f4f6f4">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; form-action 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https: http://localhost:* http://127.0.0.1:* http://[::1]:*; worker-src 'self'; manifest-src 'self'">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="Lift-O-Graph">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -11,7 +12,7 @@
     <link rel="manifest" href="./manifest.webmanifest">
     <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
-    <link rel="stylesheet" href="./styles.css?v=7">
+    <link rel="stylesheet" href="./styles.css?v=8">
   </head>
   <body>
     <div id="app" class="app-shell">
@@ -36,7 +37,7 @@
             <ol class="guide-list">
               <li>Pick a training day from the dropdown, such as Push Day, Pull Day, or Leg Day.</li>
               <li>Tap an exercise chip, or use the + button in Exercises to add one.</li>
-              <li>Use the Manage training days list to remove a specific day.</li>
+              <li>Use the dropdown to pick a training day, then use the minus button to remove the selected day.</li>
               <li>Enter weight and reps, then tap Log set.</li>
               <li>For a whole workout, type something like bench press 145 for 6 and 145 for 8, curls 30 for 12, then tap Log full workout.</li>
               <li>Use the Weight, Reps, Est. 1RM, and Volume chips to change the graph.</li>
@@ -66,13 +67,14 @@
           <h2>Training Day</h2>
           <div class="field-group">
             <label for="training-day-select">Choose training day</label>
-            <div class="select-shell">
-              <select id="training-day-select" class="field"></select>
+            <div class="select-action-row">
+              <div class="select-shell">
+                <select id="training-day-select" class="field"></select>
+              </div>
+              <button id="delete-training-day" class="icon-button danger-button" type="button" title="Delete selected training day" aria-label="Delete selected training day">
+                <span aria-hidden="true">−</span>
+              </button>
             </div>
-          </div>
-          <div class="field-group">
-            <span>Manage training days</span>
-            <div id="training-days-manager" class="training-days-manager"></div>
           </div>
           <div class="field-group">
             <label for="training-day-input">Add training day</label>
@@ -88,9 +90,14 @@
         <section class="section-block" aria-label="Exercises">
           <div class="section-title-row">
             <h2>Exercises</h2>
-            <button id="show-exercise-form" class="icon-button primary" type="button" title="Add exercise" aria-label="Add exercise">
-              <span aria-hidden="true">+</span>
-            </button>
+            <div class="icon-button-row">
+              <button id="delete-exercise" class="icon-button danger-button" type="button" title="Delete selected exercise" aria-label="Delete selected exercise">
+                <span aria-hidden="true">−</span>
+              </button>
+              <button id="show-exercise-form" class="icon-button primary" type="button" title="Add exercise" aria-label="Add exercise">
+                <span aria-hidden="true">+</span>
+              </button>
+            </div>
           </div>
           <div id="exercise-chips" class="chips"></div>
           <form id="exercise-form" class="inline-form compact-form is-hidden">
@@ -179,6 +186,6 @@
       </main>
     </div>
 
-    <script src="./app.js?v=7" defer></script>
+    <script src="./app.js?v=8" defer></script>
   </body>
 </html>

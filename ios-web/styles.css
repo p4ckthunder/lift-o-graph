@@ -152,7 +152,9 @@ small,
 }
 
 .section-title-row,
-.panel-heading {
+.panel-heading,
+.select-action-row,
+.icon-button-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -226,6 +228,8 @@ select.field {
 
 .select-shell {
   position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .select-shell::after {
@@ -313,27 +317,9 @@ label span,
   color: var(--tertiary);
 }
 
-.training-days-manager {
-  display: grid;
+.icon-button-row {
+  justify-content: flex-end;
   gap: 8px;
-}
-
-.training-day-row {
-  display: grid;
-  grid-template-columns: 1fr 44px;
-  gap: 8px;
-  align-items: center;
-  min-height: 44px;
-  padding: 6px 6px 6px 12px;
-  background: color-mix(in srgb, var(--surface-variant) 42%, transparent);
-  border-radius: var(--radius);
-}
-
-.training-day-row strong {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .primary-button,

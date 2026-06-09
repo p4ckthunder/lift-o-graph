@@ -34,6 +34,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Mic
+import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AssistChip
@@ -188,7 +189,11 @@ fun LiftographApp() {
                             onRemove = { dayId ->
                                 if (state.trainingDays.size > 1) {
                                     val remainingDays = state.trainingDays.filterNot { it.id == dayId }
-                                    val nextTrainingDayId = remainingDays.firstOrNull()?.id.orEmpty()
+                                    val nextTrainingDayId = if (state.selectedTrainingDayId == dayId) {
+                                        remainingDays.firstOrNull()?.id.orEmpty()
+                                    } else {
+                                        state.selectedTrainingDayId
+                                    }
                                     val remainingExercises = state.exercises.filterNot { it.trainingDayId == dayId }
                                     val nextExerciseId = remainingExercises
                                         .firstOrNull { it.trainingDayId == nextTrainingDayId }
@@ -223,6 +228,20 @@ fun LiftographApp() {
                             exercises = selectedDayExercises,
                             selectedExerciseId = selectedExercise?.id.orEmpty(),
                             onSelected = { id -> commit(state.copy(selectedExerciseId = id)) },
+                            onRemove = { exerciseId ->
+                                val remainingExercises = state.exercises.filterNot { it.id == exerciseId }
+                                val nextExerciseId = remainingExercises
+                                    .firstOrNull { it.trainingDayId == state.selectedTrainingDayId }
+                                    ?.id
+                                    .orEmpty()
+                                commit(
+                                    state.copy(
+                                        exercises = remainingExercises,
+                                        entries = state.entries.filterNot { it.exerciseId == exerciseId },
+                                        selectedExerciseId = nextExerciseId
+                                    )
+                                )
+                            },
                             onAdd = { name ->
                                 val exercise = Exercise(
                                     id = newId("exercise"),
@@ -344,10 +363,10 @@ private fun TrainingDayPicker(
                                         expanded = false
                                     }
                                 ) {
-                                    Text(
-                                        "-",
-                                        fontWeight = FontWeight.Black,
-                                        color = if (trainingDays.size > 1) {
+                                    Icon(
+                                        Icons.Filled.Remove,
+                                        contentDescription = "Delete ${day.name}",
+                                        tint = if (trainingDays.size > 1) {
                                             MaterialTheme.colorScheme.tertiary
                                         } else {
                                             MaterialTheme.colorScheme.onSurfaceVariant
@@ -409,10 +428,12 @@ private fun ExercisePicker(
     exercises: List<Exercise>,
     selectedExerciseId: String,
     onSelected: (String) -> Unit,
+    onRemove: (String) -> Unit,
     onAdd: (String) -> Unit
 ) {
     var adding by remember { mutableStateOf(false) }
     var newExercise by remember { mutableStateOf("") }
+    val selectedExercise = exercises.firstOrNull { it.id == selectedExerciseId }
 
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(
@@ -421,8 +442,25 @@ private fun ExercisePicker(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Exercises", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-            FilledIconButton(onClick = { adding = true }, modifier = Modifier.size(42.dp)) {
-                Icon(Icons.Filled.Add, contentDescription = "Add exercise")
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                IconButton(
+                    enabled = selectedExercise != null,
+                    onClick = { selectedExercise?.let { onRemove(it.id) } },
+                    modifier = Modifier.size(42.dp)
+                ) {
+                    Icon(
+                        Icons.Filled.Remove,
+                        contentDescription = "Delete selected exercise",
+                        tint = if (selectedExercise != null) {
+                            MaterialTheme.colorScheme.tertiary
+                        } else {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        }
+                    )
+                }
+                FilledIconButton(onClick = { adding = true }, modifier = Modifier.size(42.dp)) {
+                    Icon(Icons.Filled.Add, contentDescription = "Add exercise")
+                }
             }
         }
 
