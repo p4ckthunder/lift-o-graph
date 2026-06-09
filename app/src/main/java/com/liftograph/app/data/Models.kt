@@ -69,3 +69,39 @@ data class LiftographState(
     val apiSettings: ApiConnectorSettings = ApiConnectorSettings(),
     val uiSettings: UiSettings = UiSettings()
 )
+
+fun defaultLiftographState(): LiftographState = LiftographState(
+    trainingDays = DefaultTrainingDays.map { it.copy() },
+    selectedTrainingDayId = DefaultTrainingDays.first().id,
+    exercises = listOf(
+        Exercise(id = "bench_press", name = "Bench Press", trainingDayId = DefaultTrainingDays.first().id)
+    ),
+    entries = emptyList(),
+    selectedExerciseId = "bench_press",
+    currentPhase = TrainingPhase.Maintain,
+    apiSettings = ApiConnectorSettings(),
+    uiSettings = UiSettings()
+)
+
+fun LiftographState.withDefaultTrainingDaysPreservingLogs(): LiftographState {
+    val defaultDayIds = DefaultTrainingDays.map { it.id }.toSet()
+    val fallbackTrainingDayId = DefaultTrainingDays.first().id
+    fun normalizedTrainingDayId(trainingDayId: String): String =
+        trainingDayId.takeIf { it in defaultDayIds } ?: fallbackTrainingDayId
+
+    val nextExercises = exercises
+        .map { exercise -> exercise.copy(trainingDayId = normalizedTrainingDayId(exercise.trainingDayId)) }
+        .ifEmpty { defaultLiftographState().exercises }
+    val nextSelectedExerciseId = nextExercises
+        .firstOrNull { it.trainingDayId == fallbackTrainingDayId }
+        ?.id
+        ?: nextExercises.firstOrNull()?.id.orEmpty()
+
+    return copy(
+        trainingDays = DefaultTrainingDays.map { it.copy() },
+        selectedTrainingDayId = fallbackTrainingDayId,
+        exercises = nextExercises,
+        entries = entries.map { entry -> entry.copy(trainingDayId = normalizedTrainingDayId(entry.trainingDayId)) },
+        selectedExerciseId = nextSelectedExerciseId
+    )
+}

@@ -92,6 +92,7 @@ import com.liftograph.app.data.UiSettings
 import com.liftograph.app.data.parseLiftInput
 import com.liftograph.app.data.parseWorkoutInput
 import com.liftograph.app.data.summarizeWorkoutSets
+import com.liftograph.app.data.withDefaultTrainingDaysPreservingLogs
 import com.liftograph.app.integration.AiApiClient
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -1028,7 +1029,7 @@ private fun SettingsPanel(
             }
 
             OutlinedButton(
-                onClick = { onStateChanged(LiftographState()) },
+                onClick = { onStateChanged(state.withDefaultTrainingDaysPreservingLogs()) },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Reset app to default")

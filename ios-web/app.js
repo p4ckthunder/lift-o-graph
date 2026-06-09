@@ -25,24 +25,28 @@ const defaultTrainingDays = [
   { id: "cardio", name: "Cardio" }
 ];
 
-const defaultState = {
-  trainingDays: defaultTrainingDays,
-  selectedTrainingDayId: "push_day",
-  exercises: [{ id: "bench_press", name: "Bench Press", trainingDayId: "push_day" }],
-  entries: [],
-  selectedExerciseId: "bench_press",
-  currentPhase: "Maintain",
-  apiSettings: {
-    developerMode: false,
-    enabled: false,
-    endpoint: "",
-    apiKey: ""
-  },
-  uiSettings: {
-    darkMode: false,
-    graphMetric: "EstimatedOneRepMax"
-  }
-};
+const defaultState = createDefaultState();
+
+function createDefaultState() {
+  return {
+    trainingDays: defaultTrainingDays.map((day) => ({ ...day })),
+    selectedTrainingDayId: "push_day",
+    exercises: [{ id: "bench_press", name: "Bench Press", trainingDayId: "push_day" }],
+    entries: [],
+    selectedExerciseId: "bench_press",
+    currentPhase: "Maintain",
+    apiSettings: {
+      developerMode: false,
+      enabled: false,
+      endpoint: "",
+      apiKey: ""
+    },
+    uiSettings: {
+      darkMode: false,
+      graphMetric: "EstimatedOneRepMax"
+    }
+  };
+}
 
 let state = loadState();
 const els = {};
@@ -130,13 +134,13 @@ function bindEvents() {
   });
 
   els.resetApp.addEventListener("click", () => {
-    const confirmed = window.confirm("Reset the app to default days and clear all lift logs?");
+    const confirmed = window.confirm("Restore the default training days? Lift logs will stay saved.");
     if (!confirmed) return;
-    state = normalizeState(cloneDefaultState());
+    state = resetToDefaultTrainingDays(state);
     saveState(state);
     clearLiftFields();
     render();
-    els.settingsMessage.textContent = "App reset to default.";
+    els.settingsMessage.textContent = "Default training days restored. Lift logs kept.";
   });
 
   els.trainingDaySelect.addEventListener("change", () => {
@@ -389,6 +393,27 @@ function removeSelectedExercise() {
     selectedExerciseId
   });
   setMessage("Exercise removed.");
+}
+
+function resetToDefaultTrainingDays(current) {
+  const defaultState = createDefaultState();
+  const defaultDayIds = new Set(defaultTrainingDays.map((day) => day.id));
+  const normalizeDayId = (dayId) => defaultDayIds.has(dayId) ? dayId : defaultState.selectedTrainingDayId;
+  const exercises = current.exercises.length > 0
+    ? current.exercises.map((exercise) => ({ ...exercise, trainingDayId: normalizeDayId(exercise.trainingDayId) }))
+    : defaultState.exercises;
+  const selectedExerciseId = exercises.find((exercise) => exercise.trainingDayId === defaultState.selectedTrainingDayId)?.id
+    ?? exercises[0]?.id
+    ?? "";
+
+  return normalizeState({
+    ...current,
+    trainingDays: defaultState.trainingDays,
+    selectedTrainingDayId: defaultState.selectedTrainingDayId,
+    exercises,
+    entries: current.entries.map((entry) => ({ ...entry, trainingDayId: normalizeDayId(entry.trainingDayId) })),
+    selectedExerciseId
+  });
 }
 
 function drawChart() {
@@ -767,11 +792,13 @@ function selectedExercise() {
 }
 
 function normalizeState(next) {
-  const trainingDays = Array.isArray(next.trainingDays) && next.trainingDays.length ? next.trainingDays : defaultTrainingDays;
+  const trainingDays = Array.isArray(next.trainingDays) && next.trainingDays.length
+    ? next.trainingDays
+    : defaultTrainingDays.map((day) => ({ ...day }));
   const selectedTrainingDayId = trainingDays.some((day) => day.id === next.selectedTrainingDayId)
     ? next.selectedTrainingDayId
     : trainingDays[0].id;
-  const exercises = Array.isArray(next.exercises) ? next.exercises : defaultState.exercises;
+  const exercises = Array.isArray(next.exercises) ? next.exercises : createDefaultState().exercises;
   const selectedExerciseId = exercises.some((exercise) => exercise.id === next.selectedExerciseId)
     ? next.selectedExerciseId
     : exercises.find((exercise) => exercise.trainingDayId === selectedTrainingDayId)?.id ?? "";
@@ -791,14 +818,14 @@ function normalizeState(next) {
 
 function loadState() {
   try {
-    return normalizeState(JSON.parse(localStorage.getItem(STORE_KEY)) ?? defaultState);
+    return normalizeState(JSON.parse(localStorage.getItem(STORE_KEY)) ?? createDefaultState());
   } catch {
-    return structuredClone(defaultState);
+    return createDefaultState();
   }
 }
 
 function cloneDefaultState() {
-  return JSON.parse(JSON.stringify(defaultState));
+  return createDefaultState();
 }
 
 function saveState(next) {
